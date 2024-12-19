@@ -45,9 +45,7 @@ class Client:
             raise TypeError("async_engine not instantiated")
         return cls(async_engine)
 
-    async def initialize_tables(
-        self
-    ) -> None:
+    async def initialize_tables(self) -> None:
         async with self.__async_engine.connect() as conn:
             # Create Proposals table if not exists already
             await conn.execute(
@@ -106,9 +104,7 @@ class Client:
             if not result:
                 raise Exception("Supplier Insertion failure")
 
-    async def list_suppliers(
-        self
-    ) -> list[models.Supplier]:
+    async def list_suppliers(self) -> list[models.Supplier]:
         async with self.__async_engine.connect() as conn:
             s = text("SELECT * FROM suppliers;")
 

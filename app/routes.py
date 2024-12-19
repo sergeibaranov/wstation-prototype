@@ -9,13 +9,13 @@ routes = APIRouter()
 async def root():
     return {"message": "Hello World"}
 
+
 @routes.get("/suppliers")
-async def list_suppliers(
-    request: Request
-):
+async def list_suppliers(request: Request):
     ds: datastore.Client = request.app.state.datastore
     results = await ds.list_suppliers()
     return {"results": results}
+
 
 @routes.post("/suppliers/insert")
 async def insert_supplier(
