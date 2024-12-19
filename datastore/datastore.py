@@ -4,6 +4,7 @@ from ipaddress import IPv4Address, IPv6Address
 from typing import Any, Literal, Optional
 
 import asyncpg
+import models
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
@@ -67,14 +68,53 @@ class Client:
                 text(
                     """
                     CREATE TABLE IF NOT EXISTS suppliers(
-                      email VARCHAR(255) PRIMARY KEY,
-                      supplier_name TEXT,
+                      id serial PRIMARY KEY,
+                      name TEXT,
+                      email TEXT,
                       address TEXT
                     )
                     """
                 )
             )
             await conn.commit()
+
+    async def insert_supplier(
+        self,
+        supplier: models.Supplier,
+    ):
+        async with self.__async_engine.connect() as conn:
+            s = text(
+                """
+                INSERT INTO suppliers (
+                    name,
+                    email,
+                    address
+                ) VALUES (
+                    :name,
+                    :email,
+                    :address
+                );
+                """
+            )
+            params = {
+                "name": supplier.name,
+                "email": supplier.email,
+                "address": supplier.address,
+            }
+            result = (await conn.execute(s, params)).mappings()
+            await conn.commit()
+            if not result:
+                raise Exception("Supplier Insertion failure")
+
+    async def list_suppliers(
+        self
+    ) -> list[models.Supplier]:
+        async with self.__async_engine.connect() as conn:
+            s = text("SELECT * FROM suppliers;")
+
+            results = (await conn.execute(s)).mappings().fetchall()
+
+        return [models.Supplier.model_validate(r) for r in results]
 
     async def close(self):
         await self.__async_engine.dispose()
