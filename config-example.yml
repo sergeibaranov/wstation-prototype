@@ -1,0 +1,10 @@
+host: 0.0.0.0
+# port: 1234
+datastore:
+  kind: "postgres"
+  host: 10.106.116.8
+  # port: 5432
+  database: "wstationdemo"
+  user: "postgres"
+  password: "b9026e2dea2fca67b00e8b79"
+  # clientId: "my-clientId"
