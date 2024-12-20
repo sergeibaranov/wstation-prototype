@@ -168,3 +168,34 @@ gcloud alpha run deploy main-app \
     --network=default \
     --quiet
 ```
+
+## API reference
+
+### List suppliers
+GET /suppliers
+
+### Create / update supplier data
+POST /suppliers
+
+Request body {"name": "[supplier name]", "email": "[supplier email]", "address": "[supplier address]"}
+
+If data with the same email is submitted, it acts as update
+### Ingest proposal email
+POST /proposal_emails
+ Description: 
+request body {"rfp_name": "[RFP name]", "from_address": "[email address]", "text": "email body"}
+
+As a result a proposal record is created in the database
+
+### Get proposals for an RFP
+GET /proposals/:rfp_name
+
+URL path parameters: rfp_name (str)
+
+
+## Scalability notes
+1. Webserver layer is separated from the data layer, so that they can be scaled independently.
+2. Webserver is deployed to Cloud Run - fully managed service that scales up and down depending on the traffic. It can handle spikes in traffic and stay cost-efficient during low usage.
+3. Cloud Run tradeoffs are: cold starts (takes longer to respond if there was no traffic recently); statelessness (may become important if we need to store LLM session history), resource (CPU, memory) limits for 1 request
+4. Database is using AlloyDB, a managed DB service that enables independent scalability of CPU and storage, that can provide most cost efficient combination for our specific needs. As a trafeoff, it may be too costly for a small scale applications.
+5. As a more budget friendly solution for the prototyping phase, CloudSQL can be considered, although it is less performant and less scalable.
