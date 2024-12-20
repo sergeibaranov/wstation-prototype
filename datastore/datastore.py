@@ -53,10 +53,16 @@ class Client:
                     """
                     CREATE TABLE IF NOT EXISTS proposals(
                       id serial PRIMARY KEY,
+                      rfp_name TEXT,
                       supplier_name TEXT,
+                      supplier_email TEXT,
                       contact_name TEXT,
                       country_of_origin TEXT,
-                      price_per_unit NUMERIC
+                      price_per_unit NUMERIC,
+                      price_currency TEXT,
+                      minimum_order_quantity NUMERIC,
+                      payment_terms TEXT,
+                      certifications TEXT[]
                     )
                     """
                 )
@@ -111,6 +117,57 @@ class Client:
             results = (await conn.execute(s)).mappings().fetchall()
 
         return [models.Supplier.model_validate(r) for r in results]
+
+    async def insert_proposal(
+        self,
+        proposal: models.Proposal,
+        rfp_name: str,
+        from_address: str,
+    ):
+        async with self.__async_engine.connect() as conn:
+            s = text(
+                """
+                INSERT INTO proposals (
+                    rfp_name,
+                    supplier_name,
+                    supplier_email,
+                    contact_name,
+                    country_of_origin,
+                    price_per_unit,
+                    price_currency,
+                    minimum_order_quantity,
+                    payment_terms,
+                    certifications
+                ) VALUES (
+                    :rfp_name,
+                    :supplier_name,
+                    :supplier_email,
+                    :contact_name,
+                    :country_of_origin,
+                    :price_per_unit,
+                    :price_currency,
+                    :minimum_order_quantity,
+                    :payment_terms,
+                    :certifications
+                );
+                """
+            )
+            params = {
+                "rfp_name": rfp_name,
+                "supplier_name": proposal.supplier_name,
+                "supplier_email": from_address,
+                "contact_name": proposal.contact_name,
+                "country_of_origin": proposal.country_of_origin,
+                "price_per_unit": proposal.price_per_unit,
+                "price_currency": proposal.price_currency,
+                "minimum_order_quantity": proposal.minimum_order_quantity,
+                "payment_terms": proposal.payment_terms,
+                "certifications": proposal.certifications,
+            }
+            result = (await conn.execute(s, params)).mappings()
+            await conn.commit()
+            if not result:
+                raise Exception("Proposal Insertion failure")
 
     async def close(self):
         await self.__async_engine.dispose()

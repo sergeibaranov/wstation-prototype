@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request
 import datastore
+import langmodel
 import models
 
 routes = APIRouter()
@@ -25,3 +26,15 @@ async def insert_supplier(
     ds: datastore.Client = request.app.state.datastore
     results = await ds.insert_supplier(supplier)
     return results
+
+
+@routes.post("/proposal_emails")
+async def insert_supplier(
+    request: Request,
+    email: models.ProposalEmail,
+):
+    ds: datastore.Client = request.app.state.datastore
+    lm: langmodel.LangModelClient = request.app.state.langmodel
+    proposal = await lm.ingest_proposal(email.text)
+    await ds.insert_proposal(proposal, email.rfp_name, email.from_address)
+    return {"result": proposal}

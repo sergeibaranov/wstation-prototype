@@ -8,3 +8,5 @@ datastore:
   user: "postgres"
   password: "b9026e2dea2fca67b00e8b79"
   # clientId: "my-clientId"
+langmodel:
+  version: "gemini-1.5-flash-latest"
