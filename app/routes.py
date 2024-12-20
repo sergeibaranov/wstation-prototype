@@ -18,7 +18,7 @@ async def list_suppliers(request: Request):
     return {"results": results}
 
 
-@routes.post("/suppliers/insert")
+@routes.post("/suppliers")
 async def insert_supplier(
     request: Request,
     supplier: models.Supplier,
@@ -38,3 +38,10 @@ async def insert_supplier(
     proposal = await lm.ingest_proposal(email.text)
     await ds.insert_proposal(proposal, email.rfp_name, email.from_address)
     return {"result": proposal}
+
+
+@routes.get("/proposals/{rfp_name}")
+async def list_proposals_for_rfp(request: Request, rfp_name: str):
+    ds: datastore.Client = request.app.state.datastore
+    results = await ds.list_proposals_for_rfp(rfp_name)
+    return {"results": results}

@@ -112,7 +112,7 @@ class Client:
 
     async def list_suppliers(self) -> list[models.Supplier]:
         async with self.__async_engine.connect() as conn:
-            s = text("SELECT * FROM suppliers;")
+            s = text("SELECT * FROM suppliers WHERE id IN (SELECT MAX(id) FROM suppliers GROUP BY email);")
 
             results = (await conn.execute(s)).mappings().fetchall()
 
@@ -168,6 +168,14 @@ class Client:
             await conn.commit()
             if not result:
                 raise Exception("Proposal Insertion failure")
+
+    async def list_proposals_for_rfp(self, rfp_name: str) -> list[models.Proposal]:
+        async with self.__async_engine.connect() as conn:
+            s = text("SELECT * FROM proposals WHERE rfp_name = :rfp_name;")
+            params = {"rfp_name": rfp_name}
+            results = (await conn.execute(s, params)).mappings().fetchall()
+
+        return [models.Proposal.model_validate(r) for r in results]
 
     async def close(self):
         await self.__async_engine.dispose()
