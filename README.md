@@ -182,8 +182,8 @@ Request body {"name": "[supplier name]", "email": "[supplier email]", "address":
 If data with the same email is submitted, it acts as update
 ### Ingest proposal email
 POST /proposal_emails
- Description: 
-request body {"rfp_name": "[RFP name]", "from_address": "[email address]", "text": "email body"}
+ 
+request body {"rfp_name": "[RFP name]", "from_address": "[email address]", "text": "[email body]"}
 
 As a result a proposal record is created in the database
 
